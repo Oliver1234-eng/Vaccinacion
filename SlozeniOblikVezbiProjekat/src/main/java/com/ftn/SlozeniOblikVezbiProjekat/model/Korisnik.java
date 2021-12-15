@@ -7,7 +7,7 @@ public class Korisnik {
 	private String prezime;
 	private String email;
 	private String lozinka;
-	//u txt fajlu "0" je administrator, a "1" je medicinski radnik (zbog metode ordinal za enumeraciju u toStringu)
+	//u txt fajlu oznaka "0" je administrator, a oznaka "1" je medicinski radnik (zbog metode ordinal za enumeraciju u toStringu metodi u klasi Korisnik)
 	private UlogaKorisnika ulogaKorisnika;
 	private String JMBG;
 	
