@@ -1,4 +1,4 @@
 1;Pfizer-BioNTech COVID-19;Pfizer and BioNTech;USA, GER;20.11.2021.;94
 2;Sputnik V; Gamaleya Research Institute;RUS;30.11.2021.;1099
-3;Oxford, AstraZeneca;AstraZeneca, University of Oxford;UK;01.12.2021.;50
-4;novaVakcina;novaVakcina;drzava;15.12.2021.;98
+3;Oxford, AstraZeneca;AstraZeneca, University of Oxford;UK;01.12.2021.;58
+4;NOVAVAKCINA;NOVAVAKCINA;NOVAVAKCINA;-;0

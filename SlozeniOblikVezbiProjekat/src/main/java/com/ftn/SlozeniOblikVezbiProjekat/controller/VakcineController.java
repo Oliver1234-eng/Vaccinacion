@@ -96,7 +96,7 @@ public class VakcineController implements ServletContextAware {
 				"			<caption>Vakcine</caption>\r\n" + 
 				"			<tr>\r\n" + 
 				"				<th>R. br.</th>\r\n" + 
-				"				<th></th>\r\n" + 
+				"				<th>Nabavi vakcinu</th>\r\n" + 
 				"				<th>Naziv vakcine</th>\r\n" + 
 				"				<th>Naziv proizvodjaca</th>\r\n" + 
 				"				<th>Zemlja proizvodjac</th>\r\n" +
@@ -116,12 +116,6 @@ public class VakcineController implements ServletContextAware {
 				"				<td>"+ vakcinaIt.getZemljaProizvodjac() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getDatumPoslednjeIsporuke() +"</td>\r\n" +
 				"				<td class=\"broj\">"+ vakcinaIt.getDostupnaKolicina() +"</td>\r\n" +
-//				"				<td>" + 
-//				"					<form method=\"post\" action=\"vakcine/delete\">\r\n" + 
-//				"						<input type=\"hidden\" name=\"id\" value=\""+ vakcinaIt.getId()+"\">\r\n" + 
-//				"						<input type=\"submit\" value=\"Obrisi\"></td>\r\n" + 
-//				"					</form>\r\n" +
-//				"				</td>" +
 				"			</tr>\r\n");
 			
 		}
@@ -161,7 +155,7 @@ public class VakcineController implements ServletContextAware {
 				"			<caption>Vakcine</caption>\r\n" + 
 				"			<tr>\r\n" + 
 				"				<th>R. br.</th>\r\n" + 
-				"				<th></th>\r\n" + 
+				"				<th>Daj vakcinu</th>\r\n" + 
 				"				<th>Naziv vakcine</th>\r\n" + 
 				"				<th>Naziv proizvodjaca</th>\r\n" + 
 				"				<th>Zemlja proizvodjac</th>\r\n" +
@@ -181,12 +175,6 @@ public class VakcineController implements ServletContextAware {
 				"				<td>"+ vakcinaIt.getZemljaProizvodjac() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getDatumPoslednjeIsporuke() +"</td>\r\n" +
 				"				<td class=\"broj\">"+ vakcinaIt.getDostupnaKolicina() +"</td>\r\n" +
-//				"				<td>" + 
-//				"					<form method=\"post\" action=\"vakcine/delete\">\r\n" + 
-//				"						<input type=\"hidden\" name=\"id\" value=\""+ vakcinaIt.getId()+"\">\r\n" + 
-//				"						<input type=\"submit\" value=\"Obrisi\"></td>\r\n" + 
-//				"					</form>\r\n" +
-//				"				</td>" +
 				"			</tr>\r\n");
 			
 		}
@@ -227,8 +215,8 @@ public class VakcineController implements ServletContextAware {
 				"			<tr><th>Naziv proizvodjaca: </th><td><input type=\"text\" value=\"\" name=\"nazivProizvodjaca\"/></td></tr>\r\n" +
 				"			<tr><th>Zemlja proizvodjac: </th><td><input type=\"text\" value=\"\" name=\"zemljaProizvodjac\"/></td></tr>\r\n" +
 //				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"date\" value=\"\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" +
-				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"text\" value=\"\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" +
-				"			<tr><th>Dostupna kolicina: </th><td><input type=\"number\" min=\"1\" "+ "name=\"dostupnaKolicina\"/></td></tr>\r\n" + 
+				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"text\" value=\"-\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" +
+				"			<tr><th>Dostupna kolicina: </th><td><input type=\"number\" min=\"0\" value=\"0\" "+ "name=\"dostupnaKolicina\"/></td></tr>\r\n" + 
 				"			<tr><th></th><td><input type=\"submit\" value=\"Dodaj\" /></td>\r\n" + 
 				"		</table>\r\n" + 
 				"	</form>\r\n" +
@@ -331,26 +319,14 @@ public class VakcineController implements ServletContextAware {
 				"		<input type=\"hidden\" name=\"id\" value=\"" + vakcina.getId() + "\">\r\n" + 
 				"		<table>\r\n" + 
 				"			<caption>Vakcina</caption>\r\n" + 
-				"			<tr><th>Naziv vakcine: </th><td><input type=\"text\" "+
+				"			<tr><th>Naziv vakcine za nabavku: </th><td><input type=\"text\" "+
 				"			value=\""+ vakcina.getNazivVakcine() +"\" name=\"nazivVakcine\"/></td></tr>\r\n" + 
-//				"			<tr><th>Naziv proizvodjaca: </th><td><input type=\"text\" "+
-//				"			value=\""+ vakcina.getNazivProizvodjaca() +"\" name=\"nazivProizvodjaca\"/></td></tr>\r\n" + 
-// 				"			<tr><th>Zemlja proizvodjac: </th><td><input type=\"text\" "+
-// 				"				value=\"" + vakcina.getZemljaProizvodjac() +"\" name=\"zemljaProizvodjac\"/></td></tr>\r\n" + 
-//				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"text\" "+
-//				"			value=\""+ vakcina.getDatumPoslednjeIsporuke() +"\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" + 
-				"			<tr><th>Dostupna kolicina: </th><td><input type=\"number\" min=\"1\" "+
+				"			<tr><th>Nova dostupna kolicina (prethodno stanje + nabavljeno): </th><td><input type=\"number\" min=\"1\" "+
 				 				"value=\""+ vakcina.getDostupnaKolicina() +"\" name=\"dostupnaKolicina\"/></td></tr>\r\n" + 
-				"			<tr><th></th><td><input type=\"submit\" value=\"Izmeni\" /></td>\r\n" + 
+				"			<tr><th></th><td><input type=\"submit\" value=\"Sacuvaj podatke o nabavci\" /></td>\r\n" + 
 				"		</table>\r\n" + 
 				"	</form>\r\n" + 
 				"	<br/>\r\n" + 
-//				"	<form method=\"post\" action=\"vakcine/delete\">\r\n" + 
-//				"		<input type=\"hidden\" name=\"id\" value=\""+ vakcina.getId() +"\">\r\n" + 
-//				"		<table>\r\n" + 
-//				"			<tr><th></th><td><input type=\"submit\" value=\"Obrisi\"></td>\r\n" + 
-//				"		</table>\r\n" + 
-//				"	</form>\r\n" +
 				"	<br/>\r\n" + 
 				"	<br/>\r\n"); 
 		
@@ -383,26 +359,14 @@ public class VakcineController implements ServletContextAware {
 				"		<input type=\"hidden\" name=\"id\" value=\"" + vakcina.getId() + "\">\r\n" + 
 				"		<table>\r\n" + 
 				"			<caption>Vakcina</caption>\r\n" + 
-				"			<tr><th>Naziv vakcine: </th><td><input type=\"text\" "+
+				"			<tr><th>Daj vakcinu:  </th><td><input type=\"text\" "+
 				"			value=\""+ vakcina.getNazivVakcine() +"\" name=\"nazivVakcine\"/></td></tr>\r\n" + 
-//				"			<tr><th>Naziv proizvodjaca: </th><td><input type=\"text\" "+
-//				"			value=\""+ vakcina.getNazivProizvodjaca() +"\" name=\"nazivProizvodjaca\"/></td></tr>\r\n" + 
-// 				"			<tr><th>Zemlja proizvodjac: </th><td><input type=\"text\" "+
-// 				"				value=\"" + vakcina.getZemljaProizvodjac() +"\" name=\"zemljaProizvodjac\"/></td></tr>\r\n" + 
-//				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"text\" "+
-//				"			value=\""+ vakcina.getDatumPoslednjeIsporuke() +"\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" + 
-				"			<tr><th>Dostupna kolicina: </th><td><input type=\"number\" min=\"1\" "+
+				"			<tr><th>Uzmi jednu (kolicina - 1): </th><td><input type=\"number\" min=\"1\" "+
 				 				"value=\""+ vakcina.getDostupnaKolicina() +"\" name=\"dostupnaKolicina\"/></td></tr>\r\n" + 
-				"			<tr><th></th><td><input type=\"submit\" value=\"Izmeni\" /></td>\r\n" + 
+				"			<tr><th></th><td><input type=\"submit\" value=\"Uzmi vakcinu\" /></td>\r\n" + 
 				"		</table>\r\n" + 
 				"	</form>\r\n" + 
 				"	<br/>\r\n" + 
-//				"	<form method=\"post\" action=\"vakcine/delete\">\r\n" + 
-//				"		<input type=\"hidden\" name=\"id\" value=\""+ vakcina.getId() +"\">\r\n" + 
-//				"		<table>\r\n" + 
-//				"			<tr><th></th><td><input type=\"submit\" value=\"Obrisi\"></td>\r\n" + 
-//				"		</table>\r\n" + 
-//				"	</form>\r\n" +
 				"	<br/>\r\n" + 
 				"	<br/>\r\n"); 
 		

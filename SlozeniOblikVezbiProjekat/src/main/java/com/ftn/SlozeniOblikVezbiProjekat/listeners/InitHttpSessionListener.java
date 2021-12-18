@@ -14,23 +14,17 @@ public class InitHttpSessionListener implements HttpSessionListener {
 	
 	/** kod koji se izvrsava po kreiranju sesije */
 	public void sessionCreated(HttpSessionEvent arg0) {
-		System.out.println("Inicijalizacija sesisje HttpSessionListener...");
-//		
-//		//pri kreiranju sesije inicijalizujemo je ili radimo neke dodatne aktivnosti
-//		List<Knjiga> zaIznajmljivanje = new ArrayList<Knjiga>();
-//		String registarskiBrojCK = "";
+		System.out.println("Inicijalizacija sesije HttpSessionListener...");
+
 		HttpSession session  = arg0.getSession();
-		System.out.println("session id korisnika je "+session.getId());
-//		session.setAttribute(KnjigeController.KNJIGE_ZA_IZNAJMLJIVANJE, zaIznajmljivanje);
+		System.out.println("Session id korisnika je " + session.getId());
 		
-//		session.setAttribute(ClanskeKarteController.CLANSKA_KARTA, registarskiBrojCK);
-//		
 		System.out.println("Uspeh HttpSessionListener!");
 	}
 	
 	/** kod koji se izvrsava po brisanju sesije */
 	public void sessionDestroyed(HttpSessionEvent arg0) {
-		System.out.println("Brisanje sesisje HttpSessionListener...");
+		System.out.println("Brisanje sesije HttpSessionListener...");
 		
 		System.out.println("Uspeh HttpSessionListener!");
 	}
