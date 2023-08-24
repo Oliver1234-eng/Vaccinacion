@@ -1,34 +1,43 @@
+/* Stil za tabele */
 table {
 	border-collapse: collapse;
-	margin: 5px;
+	width: 100%;
 }
 
+/* Stil za naslov tabele */
 caption {
-	font-size: 16pt
-}
-
-th, td {
-	border: 1px solid Gray;
-	padding: 5px;
-}
-
-th {
-	text-align: right;
-	width: 150px;
-	color: white;
+	font-size: 16pt;
+	text-align: center;
 	background-color: DodgerBlue;
+	color: white;
+	padding: 10px;
 }
 
+/* Stil za zaglavlje tabele */
+th {
+	background-color: DodgerBlue;
+	color: white;
+	padding: 10px;
+	text-align: center;
+}
+
+/* Stil za ćelije tabele */
 td {
-	background-color: White;
-	min-width: 250px;
+	padding: 5px;
+	text-align: center;
 }
 
-input, textarea, select {
-	width: 250px;
+/* Stil za input polja, tekstualna polja i select */
+input[type="text"], textarea, select {
+	width: 100%;
+	padding: 5px;
+	margin: 5px 0;
+	border: 1px solid #ccc;
+	border-radius: 4px;
 	box-sizing: border-box;
 }
 
+/* Stil za checkbox i radio dugmad */
 input[type="checkbox"], input[type="radio"] {
-	width: 20px;
+	width: auto;
 }

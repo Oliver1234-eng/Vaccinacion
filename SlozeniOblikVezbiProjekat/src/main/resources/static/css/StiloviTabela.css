@@ -1,29 +1,46 @@
+/* Stil za tabelu */
 table {
 	border-collapse: collapse;
+	width: 100%;
 }
 
-caption {
-	font-size: 16pt
+/* Stil za zaglavlja */
+th {
+	background-color: DodgerBlue;
+	color: white;
+	padding: 10px;
+	text-align: left;
 }
 
-th, td {
+/* Stil za redove tabele */
+tr:nth-child(odd) {
+	background-color: LightGray;
+}
+
+/* Stil za ćelije u tabeli */
+td {
 	border: 1px solid Gray;
-	padding: 5px;
+	padding: 10px;
 }
 
+/* Stil za numeričke ćelije */
 td.broj {
 	text-align: right;
 }
 
-th {
-	color: white;
-	background-color: DodgerBlue;
-}
-
-tr:nth-child(even) {
-	background-color: LightGray;
-}
-
+/* Stil za pretragu */
 input[type="search"] {
 	width: 100%;
+	padding: 5px;
+	box-sizing: border-box;
+	background-position: 95% center;
+	background-repeat: no-repeat;
+	border: 1px solid DodgerBlue;
+	border-radius: 5px;
+	margin-bottom: 10px;
+}
+
+/* Promenite kursor na pokazivač prilikom prelaska preko polja za pretragu */
+input[type="search"]:hover {
+	cursor: pointer;
 }

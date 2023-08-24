@@ -1,17 +1,38 @@
+/* Stil za horizontalni meni */
 table.horizontalni-meni {
 	margin-top: 20px;
+	width: 100%; /* Da bi meni zauzeo celu širinu */
 }
+
+/* Stil za unordered list u meniju */
 table.horizontalni-meni ul {
-	display: inline;
+	list-style: none;
 	padding: 0;
+	margin: 0;
 }
+
+/* Stil za stavke menija */
 table.horizontalni-meni li {
 	float: left;
-	padding: 5px;
+	padding: 5px 10px; /* Dodata više paddinga levo i desno za veći dodirni prostor */
 	margin: 2px;
-	display: inline;
-	background-color: White;
-}
-table.horizontalni-meni td {
 	background-color: DodgerBlue;
+	color: white; /* Bela boja teksta za bolju vidljivost */
+}
+
+/* Stil za hover efekat stavki menija */
+table.horizontalni-meni li:hover {
+	background-color: #228B22; /* Zelena boja kada pređe mišem preko stavke */
+	transition: background-color 0.3s; /* Glatki prelaz boje */
+}
+
+/* Stil za linkove u stavkama menija */
+table.horizontalni-meni a {
+	text-decoration: none; /* Uklonite podvlačenje linkova */
+	color: white; /* Bela boja teksta za bolju vidljivost */
+}
+
+/* Stil za linkove kada korisnik pređe mišem preko njih */
+table.horizontalni-meni a:hover {
+	text-decoration: underline; /* Dodavanje podvlačenja kada pređe mišem preko linka */
 }
