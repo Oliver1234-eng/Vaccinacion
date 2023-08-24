@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.ftn.SlozeniOblikVezbiProjekat.model.UlogaKorisnika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class KorisnikController implements ServletContextAware {
 	
 	@Autowired
 	private ServletContext servletContext;
-	private  String bURL; 
+	private String bURL;
 	
 	@Autowired
 	private KorisnikService korisnikService;
@@ -46,17 +47,19 @@ public class KorisnikController implements ServletContextAware {
 	}
 	
 	@GetMapping(value = "/login")
-	public void getLogin(@RequestParam(required = false) String email, @RequestParam(required = false) String sifra,
-			HttpSession session, HttpServletResponse response) throws IOException {
-		postLogin(email, sifra, session, response);
+	public void getLogin(@RequestParam(required = false) String jmbg, @RequestParam(required = false) String sifra,
+						 @RequestParam(required = false) UlogaKorisnika ulogaKorisnika,
+						 HttpSession session, HttpServletResponse response) throws IOException {
+		postLogin(jmbg, sifra, ulogaKorisnika, session, response);
 	}
 	
 	@PostMapping(value = "/login")
 	@ResponseBody
-	public void postLogin(@RequestParam(required = false) String email, @RequestParam(required = false) String sifra,
-			HttpSession session, HttpServletResponse response) throws IOException {
+	public void postLogin(@RequestParam(required = false) String jmbg, @RequestParam(required = false) String sifra,
+						  @RequestParam(required = false) UlogaKorisnika ulogaKorisnika,
+						  HttpSession session, HttpServletResponse response) throws IOException {
 		
-		Korisnik korisnik = korisnikService.findOne(email, sifra);
+		Korisnik korisnik = korisnikService.findOne(jmbg, sifra);
 		String greska = "";
 		if (korisnik == null)
 			greska = "neispravni kredencijali<br/>";
@@ -76,16 +79,14 @@ public class KorisnikController implements ServletContextAware {
 				retVal.append("	<div>" + greska + "</div>\r\n");
 			retVal.append("	<form method=\"post\" action=\"korisnici/login\">\r\n" + "		<table>\r\n"
 					+ "			<caption>Prijava korisnika na sistem</caption>\r\n"
-					+ "			<tr><th>Email:</th><td><input type=\"text\" value=\"\" name=\"email\" required/></td></tr>\r\n"
+					+ "			<tr><th>JMBG:</th><td><input type=\"text\" value=\"\" name=\"jmbg\" required/></td></tr>\r\n"
 					+ "			<tr><th>Sifra:</th><td><input type=\"password\" value=\"\" name=\"sifra\" required/></td></tr>\r\n"
 					+ "			<tr><th></th><td><input type=\"submit\" value=\"Prijavi se\" /></td>\r\n"
 					+ "		</table>\r\n" + "	</form>\r\n" + "	<br/>\r\n" + "</body>\r\n" + "</html>");
 
 			out.write(retVal.toString());
 			return;
-		}
-
-		if (session.getAttribute(KORISNIK_KEY) != null)
+		} else if (session.getAttribute(KORISNIK_KEY) != null)
 			greska = "korisnik je već prijavljen na sistem morate se prethodno odjaviti<br/>";
 
 		if (!greska.equals("")) {
@@ -106,11 +107,18 @@ public class KorisnikController implements ServletContextAware {
 
 			out.write(retVal.toString());
 			return;
+		} else {
+			session.setAttribute(KORISNIK_KEY, korisnik);
+
+			System.out.println("Uloga korisnika: " + korisnik.getUlogaKorisnika());
+			if (korisnik.getUlogaKorisnika() == UlogaKorisnika.MedicinskiRadnik) {
+				response.sendRedirect(bURL + "vakcine/ulogaMedicinskiRadnik");
+			} else if (korisnik.getUlogaKorisnika() == UlogaKorisnika.Administrator) {
+				response.sendRedirect(bURL + "vakcine/ulogaAdministrator");
+			} else {
+				System.out.println("Nema takve uloge");
+			}
 		}
-
-		session.setAttribute(KORISNIK_KEY, korisnik);
-
-		response.sendRedirect(bURL + "vakcine");
 	}
 	
 	@GetMapping(value="/logout")
@@ -146,7 +154,7 @@ public class KorisnikController implements ServletContextAware {
 					"	<form method=\"post\" action=\"PrijavaOdjava/Login\">\r\n" + 
 					"		<table>\r\n" + 
 					"			<caption>Prijava korisnika na sistem</caption>\r\n" + 
-					"			<tr><th>Email: </th><td><input type=\"text\" value=\"\" name=\"email\" required/></td></tr>\r\n" + 
+					"			<tr><th>JMBG:</th><td><input type=\"text\" value=\"\" name=\"jmbg\" required/></td></tr>\r\n" +
 					"			<tr><th>Sifra:</th><td><input type=\"password\" value=\"\" name=\"sifra\" required/></td></tr>\r\n" + 
 					"			<tr><th></th><td><input type=\"submit\" value=\"Prijavi se\" /></td>\r\n" + 
 					"		</table>\r\n" + 
@@ -165,15 +173,7 @@ public class KorisnikController implements ServletContextAware {
 		
 		request.getSession().removeAttribute(KORISNIK_KEY);
 		request.getSession().invalidate();
-		response.sendRedirect(bURL+"korisnici/login");
+		response.sendRedirect(bURL);
 	}
-	
-//	@PostMapping(value="/obrisi")
-//	public void obrisiKorisnika(@RequestParam Long id, HttpServletResponse response) throws IOException {				
-//		korisnikService.delete(id);
-//
-//		response.sendRedirect(bURL+"korisnici");
-//	}
-
 }
 

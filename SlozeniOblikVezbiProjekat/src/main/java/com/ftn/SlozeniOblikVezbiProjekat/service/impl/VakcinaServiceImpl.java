@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,7 +28,7 @@ public class VakcinaServiceImpl implements VakcinaService {
 	@Value("${vakcine.pathToFile}")
 	private String pathToFile;
 	
-    private Map<Long, Vakcina> readFromFile() {
+    public Map<Long, Vakcina> readFromFile() {
 
     	Map<Long, Vakcina> vakcine = new HashMap<>();
     	Long nextId = 1L;
@@ -35,7 +37,7 @@ public class VakcinaServiceImpl implements VakcinaService {
 			Path path = Paths.get(pathToFile);
 			System.out.println(path.toFile().getAbsolutePath());
 			List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
-			//DateFormat convert = new SimpleDateFormat("dd.MM.yyyy.");
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
 			for (String line : lines) {
 				line = line.trim();
@@ -47,9 +49,7 @@ public class VakcinaServiceImpl implements VakcinaService {
 				String nazivVakcine = tokens[1];
 				String nazivProizvodjaca = tokens[2];
 				String zemljaProizvodjac = tokens[3];
-				String datumPoslednjeIsporuke = tokens[4];
-				//String datumPoslednjeIsporukeString = tokens[4];
-				//Date datumPoslednjeIsporuke = convert.parse(datumPoslednjeIsporukeString);
+				LocalDateTime datumPoslednjeIsporuke = LocalDateTime.parse(tokens[4], formatter);
 				int dostupnaKolicina = Integer.parseInt(tokens[5]);
 				
 				vakcine.put(id, new Vakcina(id, nazivVakcine, nazivProizvodjaca, zemljaProizvodjac, datumPoslednjeIsporuke, dostupnaKolicina));
@@ -64,7 +64,7 @@ public class VakcinaServiceImpl implements VakcinaService {
     	return vakcine;
     }
     
-    private Map<Long, Vakcina> saveToFile(Map<Long, Vakcina> vakcine) {
+    public Map<Long, Vakcina> saveToFile(Map<Long, Vakcina> vakcine) {
     	
     	Map<Long, Vakcina> ret = new HashMap<>();
     	
@@ -77,7 +77,6 @@ public class VakcinaServiceImpl implements VakcinaService {
 				lines.add(vakcina.toString());
 				ret.put(vakcina.getId(), vakcina);
 			}
-			//pisanje svih redova za vakcine
 			Files.write(path, lines, Charset.forName("UTF-8"));
 			
 		} catch (Exception e) {
@@ -112,9 +111,7 @@ public class VakcinaServiceImpl implements VakcinaService {
 	public Vakcina save(Vakcina vakcina) {
 		Map<Long, Vakcina> vakcine = readFromFile();	
 		Long nextId = nextId(vakcine); 
-		
-		//u slučaju da vakcina nema id
-		//tada treba da se dodeli id
+
 		if (vakcina.getId() == null) {
 			vakcina.setId(nextId++);
 			

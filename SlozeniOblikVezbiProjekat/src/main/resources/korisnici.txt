@@ -1,2 +1,2 @@
-1;Pera;Peric;pera@mail.com;123;0;111222
-2;Mika;Mikic;mika@mail.com;123;1;222111
+1;Pera;Peric;pera@mail.com;123;MEDICINSKIRADNIK;111222
+2;Mika;Mikic;mika@mail.com;123;ADMINISTRATOR;222111

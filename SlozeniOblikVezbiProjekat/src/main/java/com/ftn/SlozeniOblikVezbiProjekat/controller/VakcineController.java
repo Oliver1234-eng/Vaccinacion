@@ -1,25 +1,32 @@
 package com.ftn.SlozeniOblikVezbiProjekat.controller;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ftn.SlozeniOblikVezbiProjekat.service.impl.VakcinaServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.ServletContextAware;
 
 import com.ftn.SlozeniOblikVezbiProjekat.model.Vakcina;
 import com.ftn.SlozeniOblikVezbiProjekat.service.VakcinaService;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(value = "/vakcine")
@@ -27,10 +34,16 @@ public class VakcineController implements ServletContextAware {
 	
 	@Autowired
 	private ServletContext servletContext;
-	private  String bURL; 
+	private String bURL;
 	
 	@Autowired
 	private VakcinaService vakcinaService;
+
+	@Autowired
+	private VakcinaServiceImpl vakcinaServiceImpl;
+
+	@Value("${vakcine.pathToFile}")
+	private String pathToFile;
 	
 	/** inicijalizacija podataka za kontroler */
 	@PostConstruct
@@ -72,6 +85,34 @@ public class VakcineController implements ServletContextAware {
 				"</html>\r\n");		
 		return retVal.toString();
 	}
+
+	@RequestMapping(value = "/nabavi", method = RequestMethod.POST)
+	public String nabaviVakcine(@RequestParam Long vakcinaId, @RequestParam int kolicina, RedirectAttributes redirectAttributes) {
+
+		if (kolicina < 0) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Nabavljena količina ne može biti negativna.");
+			return "redirect:/vakcine/ulogaAdministrator";
+		}
+
+		Map<Long, Vakcina> vakcine = vakcinaServiceImpl.readFromFile();
+
+		Vakcina vakcina = vakcine.get(vakcinaId);
+		if (vakcina != null) {
+			int dostupnaKolicina = vakcina.getDostupnaKolicina();
+			int novaKolicina = dostupnaKolicina + kolicina;
+			vakcina.setDostupnaKolicina(novaKolicina);
+			vakcina.setDatumPoslednjeIsporuke(LocalDateTime.now());
+
+			vakcinaServiceImpl.saveToFile(vakcine);
+
+			redirectAttributes.addFlashAttribute("successMessage", "Uspešno nabavljena količina vakcina za ID " + vakcinaId);
+
+			return "redirect:/vakcine/ulogaAdministrator";
+		} else {
+			redirectAttributes.addFlashAttribute("errorMessage", "Vakcina sa ID " + vakcinaId + " nije pronađena");
+			return "redirect:/vakcine/ulogaAdministrator";
+		}
+	}
 	
 	/** pribavnjanje HTML stanice za prikaz svih entiteta, get zahtev, uloga administratora */
 	// GET: vakcine
@@ -92,30 +133,39 @@ public class VakcineController implements ServletContextAware {
 				"	<link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviHorizontalniMeni.css\"/>\r\n"+
 				"</head>\r\n" + 
 				"<body> "+
+						"<form action=\"korisnici/logout\" method=\"get\"><input type=\"submit\" value=\"Izloguj se\"> </form>" +
 				"		<table>\r\n" + 
-				"			<caption>Vakcine</caption>\r\n" + 
+				"			<caption>Vakcine (uloga administrator)</caption>\r\n" +
 				"			<tr>\r\n" + 
-				"				<th>R. br.</th>\r\n" + 
-				"				<th>Nabavi vakcinu</th>\r\n" + 
+				"				<th>R. br.</th>\r\n" +
 				"				<th>Naziv vakcine</th>\r\n" + 
 				"				<th>Naziv proizvodjaca</th>\r\n" + 
 				"				<th>Zemlja proizvodjac</th>\r\n" +
 				"				<th>Datum poslednje isporuke</th>\r\n" +
 				"				<th>Dostupna kolicina</th>\r\n" +
-				"				<th></th>\r\n" +
+				"				<th>Nabavka vakcine</th>\r\n" +
 				"			</tr>\r\n");
 		
 		for (int i=0; i < vakcine.size(); i++) {
 			Vakcina vakcinaIt = vakcine.get(i);
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+			String formatiranDatum = vakcinaIt.getDatumPoslednjeIsporuke().format(formatter);
 			retVal.append(
 				"			<tr>\r\n" + 
-				"				<td class=\"broj\">"+ (i+1) +"</td>\r\n" + 
-				"				<td><a href=\"vakcine/ulogaAdministrator/details?id="+vakcinaIt.getId()+"\">" + vakcinaIt.getNazivVakcine() +"</a></td>\r\n" +
+				"				<td class=\"broj\">"+ (i+1) +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getNazivVakcine() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getNazivProizvodjaca() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getZemljaProizvodjac() +"</td>\r\n" +
-				"				<td>"+ vakcinaIt.getDatumPoslednjeIsporuke() +"</td>\r\n" +
+				"				<td>"+ formatiranDatum +"</td>\r\n" +
 				"				<td class=\"broj\">"+ vakcinaIt.getDostupnaKolicina() +"</td>\r\n" +
+						"    <td>" +
+						"        <form method=\"post\" action=\"/SlozeniOblikVezbiProjekat/vakcine/nabavi\">\r\n" +
+						"            <input type=\"hidden\" name=\"vakcinaId\" value=\"" + vakcinaIt.getId() + "\"/>\r\n" +
+						"            <label for=\"kolicina\">Količina:</label>\r\n" +
+						"            <input type=\"number\" id=\"kolicina\" name=\"kolicina\" required/>\r\n" +
+						"            <input type=\"submit\" value=\"Nabavi vakcine\"/>\r\n" +
+						"        </form>\r\n" +
+						"    </td>\r\n" +
 				"			</tr>\r\n");
 			
 		}
@@ -131,9 +181,33 @@ public class VakcineController implements ServletContextAware {
 				"</html>\r\n");		
 		return retVal.toString();
 	}
+
+	@RequestMapping(value = "/smanjiKolicinu", method = RequestMethod.POST)
+	public String smanjiKolicinu(@RequestParam Long vakcinaId, RedirectAttributes redirectAttributes) {
+		Map<Long, Vakcina> vakcine = vakcinaServiceImpl.readFromFile();
+
+		Vakcina vakcina = vakcine.get(vakcinaId);
+		if (vakcina != null) {
+			int dostupnaKolicina = vakcina.getDostupnaKolicina();
+			if (dostupnaKolicina > 0) {
+				vakcina.setDostupnaKolicina(dostupnaKolicina - 1);
+
+				vakcinaServiceImpl.saveToFile(vakcine);
+
+				redirectAttributes.addFlashAttribute("successMessage", "Uspešno smanjena količina za vakcinu sa ID " + vakcinaId);
+
+				return "redirect:/vakcine/ulogaMedicinskiRadnik";
+			} else {
+				redirectAttributes.addFlashAttribute("errorMessage", "Nema više dostupnih vakcina za ID " + vakcinaId);
+				return "redirect:/vakcine/ulogaMedicinskiRadnik";
+			}
+		} else {
+			redirectAttributes.addFlashAttribute("errorMessage", "Vakcina sa ID " + vakcinaId + " nije pronađena");
+			return "redirect:/vakcine/ulogaMedicinskiRadnik";
+		}
+	}
 	
 	/** pribavnjanje HTML stanice za prikaz svih entiteta, get zahtev, uloga medicinskog radnika */
-	// GET: vakcine
 	@GetMapping(value="/ulogaMedicinskiRadnik")
 	@ResponseBody
 	public String indexMedicinskiRadnik() {	
@@ -151,30 +225,37 @@ public class VakcineController implements ServletContextAware {
 				"	<link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviHorizontalniMeni.css\"/>\r\n"+
 				"</head>\r\n" + 
 				"<body> "+
+						"<form action=\"korisnici/logout\" method=\"get\"><input type=\"submit\" value=\"Izloguj se\"> </form>" +
 				"		<table>\r\n" + 
-				"			<caption>Vakcine</caption>\r\n" + 
+				"			<caption>Vakcine (uloga medicinski radnik)</caption>\r\n" +
 				"			<tr>\r\n" + 
-				"				<th>R. br.</th>\r\n" + 
-				"				<th>Daj vakcinu</th>\r\n" + 
+				"				<th>R. br.</th>\r\n" +
 				"				<th>Naziv vakcine</th>\r\n" + 
 				"				<th>Naziv proizvodjaca</th>\r\n" + 
 				"				<th>Zemlja proizvodjac</th>\r\n" +
 				"				<th>Datum poslednje isporuke</th>\r\n" +
 				"				<th>Dostupna kolicina</th>\r\n" +
-				"				<th></th>\r\n" +
+				"				<th>Uzimanje vakcine</th>\r\n" +
 				"			</tr>\r\n");
 		
 		for (int i=0; i < vakcine.size(); i++) {
 			Vakcina vakcinaIt = vakcine.get(i);
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+			String formatiranDatum = vakcinaIt.getDatumPoslednjeIsporuke().format(formatter);
 			retVal.append(
 				"			<tr>\r\n" + 
-				"				<td class=\"broj\">"+ (i+1) +"</td>\r\n" + 
-				"				<td><a href=\"vakcine/ulogaMedicinskiRadnik/details?id="+vakcinaIt.getId()+"\">" + vakcinaIt.getNazivVakcine() +"</a></td>\r\n" +
+				"				<td class=\"broj\">"+ (i+1) +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getNazivVakcine() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getNazivProizvodjaca() +"</td>\r\n" +
 				"				<td>"+ vakcinaIt.getZemljaProizvodjac() +"</td>\r\n" +
-				"				<td>"+ vakcinaIt.getDatumPoslednjeIsporuke() +"</td>\r\n" +
+				"				<td>"+ formatiranDatum +"</td>\r\n" +
 				"				<td class=\"broj\">"+ vakcinaIt.getDostupnaKolicina() +"</td>\r\n" +
+						"        <td>\r\n" +
+						"            <form action=\"vakcine/smanjiKolicinu\" method=\"POST\">\r\n" +
+						"                <input type=\"hidden\" name=\"vakcinaId\" value=\"" + vakcinaIt.getId() + "\">\r\n" +
+						"                <input type=\"submit\" value=\"Daj vakcinu\">\r\n" +
+						"            </form>\r\n" +
+						"        </td>\r\n" +
 				"			</tr>\r\n");
 			
 		}
@@ -186,59 +267,117 @@ public class VakcineController implements ServletContextAware {
 				"</html>\r\n");		
 		return retVal.toString();
 	}
-	
-	
+
+	private List<String> getAllProizvodjaci() {
+		List<String> proizvodjaci = new ArrayList<>();
+		try {
+			Path path = Paths.get(pathToFile);
+			List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+			for (String line : lines) {
+				line = line.trim();
+				if (line.equals("") || line.indexOf('#') == 0)
+					continue;
+
+				String[] tokens = line.split(";");
+				if (tokens.length >= 4) {
+					String proizvodjac = tokens[2].trim();
+					if (!proizvodjaci.contains(proizvodjaci)) {
+						proizvodjaci.add(proizvodjac);
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return proizvodjaci;
+	}
+
+	private List<String> getAllZemljeProizvodjaci() {
+		List<String> zemlje = new ArrayList<>();
+		try {
+			Path path = Paths.get(pathToFile);
+			List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+			for (String line : lines) {
+				line = line.trim();
+				if (line.equals("") || line.indexOf('#') == 0)
+					continue;
+
+				String[] tokens = line.split(";");
+				if (tokens.length >= 4) {
+					String zemljaProizvodjac = tokens[3].trim();
+					if (!zemlje.contains(zemljaProizvodjac)) {
+						zemlje.add(zemljaProizvodjac);
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return zemlje;
+	}
 	
 	/** pribavnjanje HTML stanice za unos novog entiteta, get zahtev, uloga administratora */
-	// GET: vakcine/dodaj
-	@GetMapping(value="ulogaAdministrator/add")
+	@GetMapping(value = "ulogaAdministrator/add")
 	@ResponseBody
 	public String create() {
-		List<Vakcina> vakcine = vakcinaService.findAll();
-		
+		List<String> proizvodjaci = getAllProizvodjaci();
+		List<String> zemljeProizvodjaci = getAllZemljeProizvodjaci();
+
 		StringBuilder retVal = new StringBuilder();
-		retVal.append(
-				"<!DOCTYPE html>\r\n" + 
-				"<html>\r\n" + 
-				"<head>\r\n" + 
-				"	<meta charset=\"UTF-8\">\r\n" + 
-	    		"	<base href=\""+ bURL + "ulogaAdministrator"+"\">" + 
-				"	<title>Dodaj vakcinu</title>\r\n" + 
-				"	<link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviForma.css\"/>\r\n" + 
-				"	<link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviHorizontalniMeni.css\"/>\r\n"+
-				"</head>\r\n" + 
-				"<body>\r\n" + 
-				"	<form method=\"post\" action=\"vakcine/ulogaAdministrator/add\">\r\n" + 
-				"		<table>\r\n" + 
-				"			<caption>Vakcina</caption>\r\n" + 
-				"			<tr><th>Naziv vakcine: </th><td><input type=\"text\" value=\"\" name=\"nazivVakcine\"/></td></tr>\r\n" + 
-				"			<tr><th>Naziv proizvodjaca: </th><td><input type=\"text\" value=\"\" name=\"nazivProizvodjaca\"/></td></tr>\r\n" +
-				"			<tr><th>Zemlja proizvodjac: </th><td><input type=\"text\" value=\"\" name=\"zemljaProizvodjac\"/></td></tr>\r\n" +
-//				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"date\" value=\"\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" +
-				"			<tr><th>Datum poslednje isporuke: </th><td><input type=\"text\" value=\"-\" name=\"datumPoslednjeIsporuke\"/></td></tr>\r\n" +
-				"			<tr><th>Dostupna kolicina: </th><td><input type=\"number\" min=\"0\" value=\"0\" "+ "name=\"dostupnaKolicina\"/></td></tr>\r\n" + 
-				"			<tr><th></th><td><input type=\"submit\" value=\"Dodaj\" /></td>\r\n" + 
-				"		</table>\r\n" + 
-				"	</form>\r\n" +
-				"	<br/>\r\n");
-		retVal.append(
-				"</body>\r\n"+
-				"</html>\r\n");		
+		retVal.append("<!DOCTYPE html>\r\n" +
+				"<html>\r\n" +
+				"<head>\r\n" +
+				"    <meta charset=\"UTF-8\">\r\n" +
+				"    <base href=\"" + bURL + "ulogaAdministrator" + "\">" +
+				"    <title>Dodaj vakcinu</title>\r\n" +
+				"    <link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviForma.css\"/>\r\n" +
+				"    <link rel=\"stylesheet\" type=\"text/css\" href=\"css/StiloviHorizontalniMeni.css\"/>\r\n" +
+				"</head>\r\n" +
+				"<body>\r\n" +
+				"    <form method=\"post\" action=\"vakcine/ulogaAdministrator/add\">\r\n" +
+				"        <table>\r\n" +
+				"            <caption>Vakcina</caption>\r\n" +
+				"            <tr><th>Naziv vakcine: </th><td><input type=\"text\" value=\"\" name=\"nazivVakcine\"/></td></tr>\r\n" +
+						"    <tr><th>Naziv proizvođača: </th><td><select name=\"nazivProizvodjaca\">\r\n");
+
+		for (String naziv : proizvodjaci) {
+			retVal.append("<option value=\"" + naziv + "\">" + naziv + "</option>\r\n");
+		}
+
+		retVal.append("</select></td></tr>\r\n" +
+				"            <tr><th>Zemlja proizvođača: </th><td><select name=\"zemljaProizvodjaca\">\r\n");
+
+		for (String zemlja : zemljeProizvodjaci) {
+			retVal.append("<option value=\"" + zemlja + "\">" + zemlja + "</option>\r\n");
+		}
+
+		retVal.append("</select></td></tr>\r\n" +
+				"            <tr><th></th><td><input type=\"submit\" value=\"Dodaj\" /></td></tr>\r\n" +
+				"        </table>\r\n" +
+				"    </form>\r\n" +
+				"    <br/>\r\n" +
+				"</body>\r\n" +
+				"</html>\r\n");
+
 		return retVal.toString();
 	}
 	
 	/** obrada podataka forme za unos novog entiteta, post zahtev */
-	// POST: vakcine/add
-	@PostMapping(value="ulogaAdministrator/add")
-	public void create(@RequestParam String nazivVakcine, @RequestParam String nazivProizvodjaca, 
-			@RequestParam String zemljaProizvodjac, @RequestParam String datumPoslednjeIsporuke ,@RequestParam int dostupnaKolicina, HttpServletResponse response) throws IOException {		
-		Vakcina vakcina = new Vakcina(nazivVakcine, nazivProizvodjaca, zemljaProizvodjac, datumPoslednjeIsporuke, dostupnaKolicina);
+	@PostMapping(value = "ulogaAdministrator/add")
+	public void create(@RequestParam String nazivVakcine, @RequestParam String nazivProizvodjaca, @RequestParam String zemljaProizvodjaca, HttpServletResponse response) throws IOException {
+		LocalDateTime datumPoslednjeIsporuke = LocalDateTime.now();
+		int dostupnaKolicina = 0;
+
+		Vakcina vakcina = new Vakcina(nazivVakcine, nazivProizvodjaca, zemljaProizvodjaca, datumPoslednjeIsporuke, dostupnaKolicina);
 		Vakcina saved = vakcinaService.save(vakcina);
 		response.sendRedirect(bURL + "vakcine/ulogaAdministrator");
 	}
 	
 	/** obrada podataka forme za izmenu postojećeg entiteta, post zahtev, uloga administratora */
-	// POST: vakcine/edit
 	@PostMapping(value="/ulogaAdministrator/edit")
 	public void EditUlogaAdministrator(@ModelAttribute Vakcina vakcinaEdited , HttpServletResponse response) throws IOException {	
 		Vakcina vakcina = vakcinaService.findOne(vakcinaEdited.getId());
@@ -251,9 +390,6 @@ public class VakcineController implements ServletContextAware {
 			
 			if(vakcinaEdited.getZemljaProizvodjac() != null && !vakcinaEdited.getNazivProizvodjaca().trim().equals(""))
 				vakcina.setZemljaProizvodjac(vakcinaEdited.getZemljaProizvodjac());
-			
-			if(vakcinaEdited.getDatumPoslednjeIsporuke() != null && !vakcinaEdited.getDatumPoslednjeIsporuke().trim().equals(""))
-				vakcina.setDatumPoslednjeIsporuke(vakcinaEdited.getDatumPoslednjeIsporuke());
 			
 			if(vakcinaEdited.getDostupnaKolicina() > 0)
 				vakcina.setDostupnaKolicina(vakcinaEdited.getDostupnaKolicina());
@@ -276,9 +412,6 @@ public class VakcineController implements ServletContextAware {
 			
 			if(vakcinaEdited.getZemljaProizvodjac() != null && !vakcinaEdited.getNazivProizvodjaca().trim().equals(""))
 				vakcina.setZemljaProizvodjac(vakcinaEdited.getZemljaProizvodjac());
-			
-			if(vakcinaEdited.getDatumPoslednjeIsporuke() != null && !vakcinaEdited.getDatumPoslednjeIsporuke().trim().equals(""))
-				vakcina.setDatumPoslednjeIsporuke(vakcinaEdited.getDatumPoslednjeIsporuke());
 			
 			if(vakcinaEdited.getDostupnaKolicina() > 0)
 				vakcina.setDostupnaKolicina(vakcinaEdited.getDostupnaKolicina());

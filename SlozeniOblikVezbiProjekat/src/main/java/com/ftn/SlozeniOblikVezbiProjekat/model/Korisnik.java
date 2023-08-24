@@ -7,7 +7,6 @@ public class Korisnik {
 	private String prezime;
 	private String email;
 	private String lozinka;
-	//u txt fajlu oznaka "0" je administrator, a oznaka "1" je medicinski radnik (zbog metode ordinal za enumeraciju u toStringu metodi u klasi Korisnik)
 	private UlogaKorisnika ulogaKorisnika;
 	private String JMBG;
 	
@@ -20,7 +19,7 @@ public class Korisnik {
 		this.prezime = prezime;
 		this.email = email;
 		this.lozinka = lozinka;
-		this.ulogaKorisnika = UlogaKorisnika.Administrator;
+		this.ulogaKorisnika = ulogaKorisnika;
 		this.JMBG = JMBG;
 	}
 
@@ -87,7 +86,7 @@ public class Korisnik {
 	
 	public String toFileString() {
 		return this.getId() + ";" + this.getIme() + ";" + this.getPrezime() + ";" + 
-				this.getEmail() + ";" + this.getLozinka() + ";" + this.ulogaKorisnika.ordinal()
+				this.getEmail() + ";" + this.getLozinka() + ";" + this.ulogaKorisnika
 				+ ";" + this.getJMBG();
 	}
 	

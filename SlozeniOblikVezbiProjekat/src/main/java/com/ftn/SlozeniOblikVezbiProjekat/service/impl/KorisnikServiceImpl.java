@@ -45,8 +45,15 @@ public class KorisnikServiceImpl implements KorisnikService {
 				String prezime = tokens[2];
 				String email = tokens[3];
 				String lozinka = tokens[4];
-				int ulogaKorisnikaInt = Integer.parseInt(tokens[5]);
-				UlogaKorisnika ulogaKorisnika = UlogaKorisnika.values()[ulogaKorisnikaInt];
+				String ulogaToken = tokens[5].trim().toUpperCase();
+				UlogaKorisnika ulogaKorisnika = null;
+				if (ulogaToken.equals("ADMINISTRATOR")) {
+					ulogaKorisnika = UlogaKorisnika.Administrator;
+				} else if (ulogaToken.equals("MEDICINSKIRADNIK")) {
+					ulogaKorisnika = UlogaKorisnika.MedicinskiRadnik;
+				} else {
+					System.err.println("Nepoznata uloga: " + ulogaToken);
+				}
 				String JMBG = tokens[6];
 
 				korisnici.put(Long.parseLong(tokens[0]), new Korisnik(id, ime, prezime, email, lozinka, ulogaKorisnika, JMBG));
@@ -74,11 +81,9 @@ public class KorisnikServiceImpl implements KorisnikService {
 				lines.add(k.toFileString());
 				ret.put(k.getId(), k);
 			}
-			//pisanje svih redova za clanske karte
 			Files.write(path, lines, Charset.forName("UTF-8"));
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	return ret;
@@ -114,11 +119,11 @@ public class KorisnikServiceImpl implements KorisnikService {
 	}
 
 	@Override
-	public Korisnik findOne(String email, String sifra) {
+	public Korisnik findOne(String jmbg, String sifra) {
 		Map<Long, Korisnik> korisnici = readFromFile();
 		Korisnik found = null;
 		for (Korisnik korisnik : korisnici.values()) {
-			if (korisnik.getEmail().equals(email) && korisnik.getLozinka().equals(sifra)) {
+			if (korisnik.getJMBG().equals(jmbg) && korisnik.getLozinka().equals(sifra)) {
 				found = korisnik;
 				break;
 			}

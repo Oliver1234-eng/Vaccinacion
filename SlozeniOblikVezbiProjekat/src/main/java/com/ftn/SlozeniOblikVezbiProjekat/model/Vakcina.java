@@ -1,20 +1,22 @@
 package com.ftn.SlozeniOblikVezbiProjekat.model;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class Vakcina {
-	
+
 	private Long id;
 	private String nazivVakcine;
 	private String nazivProizvodjaca;
 	private String zemljaProizvodjac;
-	//private Date datumPoslednjeIsporuke;
-	private String datumPoslednjeIsporuke;
+	private LocalDateTime datumPoslednjeIsporuke;
 	private int dostupnaKolicina;
 	
 	public Vakcina() {}
 
-	public Vakcina(Long id, String nazivVakcine, String nazivProizvodjaca, String zemljaProizvodjac, String datumPoslednjeIsporuke,
+	public Vakcina(Long id, String nazivVakcine, String nazivProizvodjaca, String zemljaProizvodjac, LocalDateTime datumPoslednjeIsporuke,
 			int dostupnaKolicina) {
 		super();
 		this.id = id;
@@ -25,7 +27,7 @@ public class Vakcina {
 		this.dostupnaKolicina = dostupnaKolicina;
 	}
 	
-	public Vakcina(String nazivVakcine, String nazivProizvodjaca, String zemljaProizvodjac, String datumPoslednjeIsporuke,
+	public Vakcina(String nazivVakcine, String nazivProizvodjaca, String zemljaProizvodjac, LocalDateTime datumPoslednjeIsporuke,
 			int dostupnaKolicina) {
 		super();
 		this.nazivVakcine = nazivVakcine;
@@ -67,11 +69,11 @@ public class Vakcina {
 		this.zemljaProizvodjac = zemljaProizvodjac;
 	}
 
-	public String getDatumPoslednjeIsporuke() {
+	public LocalDateTime getDatumPoslednjeIsporuke() {
 		return datumPoslednjeIsporuke;
 	}
 
-	public void setDatumPoslednjeIsporuke(String datumPoslednjeIsporuke) {
+	public void setDatumPoslednjeIsporuke(LocalDateTime datumPoslednjeIsporuke) {
 		this.datumPoslednjeIsporuke = datumPoslednjeIsporuke;
 	}
 
@@ -82,11 +84,16 @@ public class Vakcina {
 	public void setDostupnaKolicina(int dostupnaKolicina) {
 		this.dostupnaKolicina = dostupnaKolicina;
 	}
-	
+
 	@Override
 	public String toString() {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+		String formatiranDatum = (datumPoslednjeIsporuke != null && !datumPoslednjeIsporuke.equals(LocalDateTime.MIN))
+				? datumPoslednjeIsporuke.format(formatter)
+				: "";
+
 		return this.getId() + ";" + this.getNazivVakcine() + ";" + this.getNazivProizvodjaca() + ";" + this.getZemljaProizvodjac()
-		 + ";" + this.getDatumPoslednjeIsporuke() + ";" + this.getDostupnaKolicina();
+				+ ";" + formatiranDatum + ";" + this.getDostupnaKolicina();
 	}
 
 }
